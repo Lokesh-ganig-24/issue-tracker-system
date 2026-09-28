@@ -1,0 +1,77 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../services/api";
+
+function Login() {
+    const navigate = useNavigate();
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");
+
+        try {
+            const response = await api.post("/auth/login", {
+                email,
+                password,
+            });
+
+            localStorage.setItem("token", response.data.token);
+            localStorage.setItem("user", JSON.stringify(response.data));
+
+            navigate("/dashboard");
+        } catch (err) {
+            setError(
+                err.response?.data?.message ||
+                "Invalid email or password"
+            );
+        }
+    };
+
+    return (
+        <div className="auth-container">
+            <div className="auth-card">
+                <h1>Issue Tracker</h1>
+                <h2>Login</h2>
+
+                {error && <p className="error-message">{error}</p>}
+
+                <form onSubmit={handleSubmit}>
+                    <input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+
+                    <button type="submit">Login</button>
+                </form>
+
+                <p>
+                    Don't have an account?{" "}
+                    <button
+                        type="button"
+                        className="link-button"
+                        onClick={() => navigate("/register")}
+                    >
+                        Register
+                    </button>
+                </p>
+            </div>
+        </div>
+    );
+}
+
+export default Login;
